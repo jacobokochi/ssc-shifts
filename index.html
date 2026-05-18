@@ -354,9 +354,16 @@ function showToast(msg, ok){
 }
 
 function getMyClaims(){
+  const firstName = myName ? myName.split(' ')[0] : '';
   return ALL_EVENTS.filter(ev=>{
     const key=fmtDate(ev.date)+'|'+ev.name;
-    return (claims[key]||[]).includes(myName);
+    const claimedMatch = (claims[key]||[]).includes(myName);
+    const confirmedMatch = (ev.confirmedStaff||[]).some(n=>
+      n === myName || n === firstName ||
+      (myName && myName.toLowerCase().includes(n.toLowerCase())) ||
+      (n.toLowerCase().includes(firstName.toLowerCase()))
+    );
+    return claimedMatch || confirmedMatch;
   });
 }
 
