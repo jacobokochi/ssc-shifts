@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>SSC Staff Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Courier Prime', monospace;
+  background: #1a1714;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.logo-area {
+  text-align: center;
+  margin-bottom: 48px;
+}
+
+.brand {
+  font-family: 'Oswald', sans-serif;
+  color: #C9A84C;
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+.brand-sub {
+  color: rgba(255,255,255,0.3);
+  font-size: 9px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  margin-top: 6px;
+}
+
+.divider {
+  width: 40px;
+  height: 1px;
+  background: rgba(201,168,76,0.3);
+  margin: 20px auto;
+}
+
+.season {
+  color: rgba(255,255,255,0.2);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+  max-width: 320px;
+}
+
+.btn {
+  display: block;
+  text-decoration: none;
+  padding: 20px 24px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.04);
+  transition: all 0.15s;
+  cursor: pointer;
+}
+
+.btn:hover {
+  border-color: rgba(201,168,76,0.5);
+  background: rgba(201,168,76,0.08);
+}
+
+.btn-icon {
+  font-size: 22px;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.btn-title {
+  font-family: 'Oswald', sans-serif;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.btn-desc {
+  color: rgba(255,255,255,0.35);
+  font-size: 10px;
+  letter-spacing: 0.05em;
+  display: block;
+}
+
+.btn.primary {
+  border-color: rgba(201,168,76,0.4);
+  background: rgba(201,168,76,0.08);
+}
+
+.btn.primary .btn-title {
+  color: #C9A84C;
+}
+
+.footer {
+  margin-top: 48px;
+  text-align: center;
+  color: rgba(255,255,255,0.15);
+  font-size: 9px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+</style>
+</head>
+<body>
+
+<div class="logo-area">
+  <div class="brand">Sourdough<br>Social Club</div>
+  <div class="divider"></div>
+  <div class="season">2026 Season — Staff Portal</div>
+</div>
+
+<div class="buttons">
+  <a href="calendar.html" class="btn primary">
+    <span class="btn-icon">📅</span>
+    <span class="btn-title">Shift Calendar</span>
+    <span class="btn-desc">View events, bid on shifts, see your schedule</span>
+  </a>
+
+  <a href="report.html" class="btn">
+    <span class="btn-icon">📋</span>
+    <span class="btn-title">End of Market Report</span>
+    <span class="btn-desc">Submit daily sales for Jacob's approval</span>
+  </a>
+</div>
+
+<div class="footer">
+  jacobokochi.github.io/ssc-shifts
+</div>
+
+</body>
+</html>

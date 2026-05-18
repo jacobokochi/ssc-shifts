@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>SSC — Approval Queue</title>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#1a1714;--cream:#f2ede4;--blue:#2D4B8E;--red:#C0392B;--gold:#C9A84C;--green:#2D6A4F;--border:#d4cbbf;--muted:#888;}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{font-family:'Courier Prime',monospace;background:var(--cream);color:var(--ink);min-height:100vh;max-width:480px;margin:0 auto;}
+
+/* PIN SCREEN */
+.pin-screen{position:fixed;inset:0;background:var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px;z-index:1000;}
+.pin-logo{font-family:'Oswald',sans-serif;color:var(--gold);font-size:11px;letter-spacing:0.2em;text-transform:uppercase;margin-bottom:6px;}
+.pin-title{font-family:'Oswald',sans-serif;color:white;font-size:22px;font-weight:700;letter-spacing:0.06em;margin-bottom:4px;}
+.pin-sub{color:rgba(255,255,255,0.3);font-size:10px;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:32px;}
+.pin-dots{display:flex;gap:12px;margin-bottom:32px;}
+.pin-dot{width:16px;height:16px;border-radius:50%;border:2px solid rgba(255,255,255,0.2);background:transparent;transition:background 0.1s;}
+.pin-dot.filled{background:var(--gold);border-color:var(--gold);}
+.pin-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;width:240px;}
+.pin-btn{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:white;padding:16px;font-family:'Oswald',sans-serif;font-size:20px;font-weight:600;cursor:pointer;border-radius:4px;transition:background 0.1s;}
+.pin-btn:active{background:rgba(201,168,76,0.3);}
+.pin-btn.del{font-size:16px;color:rgba(255,255,255,0.5);}
+.pin-error{color:var(--red);font-size:10px;letter-spacing:0.1em;text-transform:uppercase;margin-top:12px;height:14px;}
+
+/* MAIN APP */
+.header{background:var(--ink);color:white;padding:12px 16px 10px;position:sticky;top:0;z-index:100;}
+.header-title{font-family:'Oswald',sans-serif;color:var(--gold);font-size:14px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;}
+.header-sub{font-size:8px;letter-spacing:0.2em;opacity:0.4;text-transform:uppercase;margin-top:2px;}
+.header-row{display:flex;justify-content:space-between;align-items:center;}
+.back-link{color:rgba(255,255,255,0.4);font-size:9px;letter-spacing:0.1em;text-decoration:none;font-family:'Oswald',sans-serif;}
+.refresh-btn{background:transparent;border:1px solid rgba(201,168,76,0.3);color:var(--gold);font-family:'Oswald',sans-serif;font-size:9px;padding:3px 10px;letter-spacing:0.1em;cursor:pointer;}
+
+.stats-bar{background:var(--blue);color:white;padding:6px 16px;display:flex;justify-content:space-between;font-family:'Oswald',sans-serif;font-size:9px;letter-spacing:0.1em;}
+.pending-count{color:var(--gold);font-weight:700;}
+
+.empty-state{text-align:center;padding:60px 24px;color:var(--muted);font-size:13px;}
+.empty-icon{font-size:40px;margin-bottom:12px;}
+.empty-title{font-family:'Oswald',sans-serif;font-size:16px;color:var(--ink);margin-bottom:6px;}
+
+/* SUBMISSION CARD */
+.sub-card{margin:10px 12px;border:1px solid var(--border);overflow:hidden;background:white;}
+.sub-card-hdr{background:var(--blue);color:white;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;}
+.sub-event{font-family:'Oswald',sans-serif;font-size:13px;letter-spacing:0.06em;text-transform:uppercase;}
+.sub-meta{font-size:9px;opacity:0.7;margin-top:2px;}
+.sub-by{font-size:9px;color:rgba(255,255,255,0.5);}
+.sub-body{padding:12px 14px;}
+
+.brief-row{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #f0ede8;font-size:11px;}
+.brief-label{color:#777;}
+.brief-val{font-weight:700;}
+.brief-section{font-family:'Oswald',sans-serif;font-size:8px;letter-spacing:0.12em;color:#aaa;text-transform:uppercase;margin:10px 0 4px;}
+
+.staff-mini{background:#f5f5f3;padding:8px 10px;margin:4px 0;display:flex;justify-content:space-between;font-size:11px;}
+.staff-mini-name{color:#555;}
+.staff-mini-pay{font-weight:700;color:var(--blue);}
+
+.notes-box{background:#fffde7;border:1px solid #f5e642;padding:8px 10px;font-size:10px;color:#666;margin-top:8px;font-style:italic;}
+
+.action-row{display:flex;gap:8px;padding:12px 14px;border-top:1px solid var(--border);}
+.approve-btn{flex:2;padding:12px;background:var(--green);color:white;border:none;font-family:'Oswald',sans-serif;font-size:12px;font-weight:700;letter-spacing:0.1em;cursor:pointer;}
+.reject-btn{flex:1;padding:12px;background:transparent;color:var(--red);border:1px solid var(--red);font-family:'Oswald',sans-serif;font-size:12px;font-weight:700;letter-spacing:0.1em;cursor:pointer;}
+.approve-btn:disabled,.reject-btn:disabled{opacity:0.5;cursor:default;}
+
+.sub-card.approved{opacity:0.5;border-color:#ccc;}
+.sub-card.rejected{opacity:0.4;border-color:#ccc;}
+.status-badge{font-size:10px;padding:2px 8px;border-radius:10px;font-family:'Oswald',sans-serif;letter-spacing:0.06em;}
+.status-badge.approved{background:var(--green);color:white;}
+.status-badge.rejected{background:var(--red);color:white;}
+.status-badge.pending{background:var(--gold);color:var(--ink);}
+
+.toast{position:fixed;top:16px;left:50%;transform:translateX(-50%);padding:10px 20px;border-radius:4px;font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:0.08em;z-index:2000;color:white;box-shadow:0 4px 20px rgba(0,0,0,0.3);display:none;}
+.toast.ok{background:var(--green);}
+.toast.err{background:var(--red);}
+</style>
+</head>
+<body>
+
+<!-- PIN SCREEN -->
+<div id="pin-screen" class="pin-screen">
+  <div class="pin-logo">Sourdough Social Club</div>
+  <div class="pin-title">Jacob Only</div>
+  <div class="pin-sub">Enter 6-digit PIN to continue</div>
+  <div class="pin-dots" id="pin-dots">
+    <div class="pin-dot" id="d0"></div>
+    <div class="pin-dot" id="d1"></div>
+    <div class="pin-dot" id="d2"></div>
+    <div class="pin-dot" id="d3"></div>
+    <div class="pin-dot" id="d4"></div>
+    <div class="pin-dot" id="d5"></div>
+  </div>
+  <div class="pin-pad">
+    <button class="pin-btn" onclick="pinPress('1')">1</button>
+    <button class="pin-btn" onclick="pinPress('2')">2</button>
+    <button class="pin-btn" onclick="pinPress('3')">3</button>
+    <button class="pin-btn" onclick="pinPress('4')">4</button>
+    <button class="pin-btn" onclick="pinPress('5')">5</button>
+    <button class="pin-btn" onclick="pinPress('6')">6</button>
+    <button class="pin-btn" onclick="pinPress('7')">7</button>
+    <button class="pin-btn" onclick="pinPress('8')">8</button>
+    <button class="pin-btn" onclick="pinPress('9')">9</button>
+    <button class="pin-btn" onclick="pinPress('')" style="visibility:hidden;"></button>
+    <button class="pin-btn" onclick="pinPress('0')">0</button>
+    <button class="pin-btn del" onclick="pinDel()">⌫</button>
+  </div>
+  <div class="pin-error" id="pin-error"></div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app" style="display:none;">
+  <div class="header">
+    <div class="header-row">
+      <div>
+        <div class="header-title">Approval Queue</div>
+        <div class="header-sub">Market Report Review</div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <button class="refresh-btn" onclick="loadPending()">↻ REFRESH</button>
+        <a href="index.html" class="back-link">PORTAL</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="stats-bar">
+    <span>PENDING: <span class="pending-count" id="pending-count">—</span></span>
+    <span id="last-refresh">Loading...</span>
+  </div>
+
+  <div id="submissions"></div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwb0JJ2FMqj3YgePFe3YiKs9AquaecfBqh-YAut3adssVXP_VxVinGWP3FlsUl_6OpOJQ/exec";
+
+// ── REPLACE 000000 WITH YOUR 6-DIGIT PIN ─────────────────────
+const CORRECT_PIN = "476218";
+// ─────────────────────────────────────────────────────────────
+
+var pinEntry = "";
+
+function pinPress(d){
+  if(!d) return;
+  if(pinEntry.length >= 6) return;
+  pinEntry += d;
+  updateDots();
+  if(pinEntry.length === 6) checkPin();
+}
+
+function pinDel(){
+  pinEntry = pinEntry.slice(0,-1);
+  document.getElementById('pin-error').textContent = '';
+  updateDots();
+}
+
+function updateDots(){
+  for(var i=0;i<6;i++){
+    document.getElementById('d'+i).className = 'pin-dot' + (i<pinEntry.length?' filled':'');
+  }
+}
+
+function checkPin(){
+  if(pinEntry === CORRECT_PIN){
+    document.getElementById('pin-screen').style.display='none';
+    document.getElementById('app').style.display='block';
+    sessionStorage.setItem('ssc_approved','1');
+    loadPending();
+  } else {
+    document.getElementById('pin-error').textContent = 'Incorrect PIN';
+    pinEntry = '';
+    updateDots();
+    setTimeout(function(){ document.getElementById('pin-error').textContent=''; },1500);
+  }
+}
+
+// Skip PIN if already authenticated this session
+if(sessionStorage.getItem('ssc_approved')==='1'){
+  document.getElementById('pin-screen').style.display='none';
+  document.getElementById('app').style.display='block';
+}
+
+function apiFetch(params){
+  return new Promise(function(resolve){
+    var cbName='ssc_cb_'+Date.now();
+    var url=WEB_APP_URL+'?'+new URLSearchParams(Object.assign({},params,{callback:cbName})).toString();
+    window[cbName]=function(data){ delete window[cbName]; var el=document.getElementById(cbName); if(el)el.remove(); resolve(data); };
+    var script=document.createElement('script');
+    script.id=cbName; script.src=url;
+    script.onerror=function(){ delete window[cbName]; script.remove(); resolve({success:false,message:'Connection error'}); };
+    document.body.appendChild(script);
+    setTimeout(function(){ if(window[cbName]){ delete window[cbName]; var el=document.getElementById(cbName); if(el)el.remove(); resolve({success:false,message:'Timeout'}); }},10000);
+  });
+}
+
+function fmt(n){ return isNaN(n)?'$0.00':'$'+Number(n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function fmtDate(s){ try{ var d=new Date(s); return d.toLocaleDateString('en-US',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}); }catch(e){ return s; } }
+
+async function loadPending(){
+  document.getElementById('last-refresh').textContent = 'Loading...';
+  document.getElementById('submissions').innerHTML = '<div style="text-align:center;padding:40px;color:#aaa;">Loading submissions...</div>';
+
+  var res = await apiFetch({action:'getPending'});
+
+  var now = new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+  document.getElementById('last-refresh').textContent = 'Refreshed '+now;
+
+  if(!res || !res.success){
+    document.getElementById('submissions').innerHTML = '<div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-title">Connection Error</div><div>Could not load submissions. Check Apps Script deployment.</div></div>';
+    return;
+  }
+
+  var items = res.data || [];
+  var pending = items.filter(function(i){ return true; }); // show all
+
+  document.getElementById('pending-count').textContent = items.length;
+
+  if(!items.length){
+    document.getElementById('submissions').innerHTML = '<div class="empty-state"><div class="empty-icon">✅</div><div class="empty-title">All Clear</div><div>No pending market reports.</div></div>';
+    return;
+  }
+
+  var html = '';
+  items.reverse().forEach(function(item){
+    var d = item.data || {};
+    html += '<div class="sub-card" id="card-'+item.id+'">';
+    html += '<div class="sub-card-hdr">';
+    html += '<div><div class="sub-event">'+(d.event||'Unknown Event')+'</div>';
+    html += '<div class="sub-meta">'+(d.date||'')+'  ·  '+(d.city||'')+'</div></div>';
+    html += '<div style="text-align:right;"><div class="sub-by">Submitted by<br>'+item.submittedBy+'</div>';
+    html += '<div style="font-size:9px;color:rgba(255,255,255,0.35);margin-top:2px;">'+fmtDate(item.submittedAt)+'</div></div>';
+    html += '</div>';
+
+    html += '<div class="sub-body">';
+    html += '<div class="brief-section">Revenue</div>';
+    html += '<div class="brief-row"><span class="brief-label">Gross Sales</span><span class="brief-val">'+fmt(d.gross)+'</span></div>';
+    html += '<div class="brief-row"><span class="brief-label">Card</span><span class="brief-val">'+fmt(d.card)+'</span></div>';
+    html += '<div class="brief-row"><span class="brief-label">Cash</span><span class="brief-val">'+fmt(d.cash)+'</span></div>';
+    html += '<div class="brief-row"><span class="brief-label">Tips</span><span class="brief-val">'+fmt(d.tips)+'</span></div>';
+    html += '<div class="brief-row" style="border-bottom:2px solid var(--ink);"><span class="brief-label"><strong>Pre-Labor P/L</strong></span><span class="brief-val" style="color:var(--green);">'+fmt(d.preLaborPL)+'</span></div>';
+    html += '<div class="brief-row"><span class="brief-label"><strong>Net P/L</strong></span><span class="brief-val" style="color:'+(d.netPL>=0?'var(--green)':'var(--red)')+';">'+fmt(d.netPL)+'</span></div>';
+
+    html += '<div class="brief-section">Staff Pay</div>';
+    if(d.zachWorking){
+      html += '<div class="staff-mini"><span class="staff-mini-name">Zach — Wage + Tip</span><span class="staff-mini-pay">'+fmt((d.zachWage||0)+(d.tipEa||0))+'</span></div>';
+    }
+    if(d.otherStaff){
+      d.otherStaff.split(',').filter(Boolean).forEach(function(name){
+        html += '<div class="staff-mini"><span class="staff-mini-name">'+name.trim()+'</span><span class="staff-mini-pay">'+fmt((d.staffWageEa||0)+(d.tipEa||0))+'</span></div>';
+      });
+    }
+
+    html += '<div class="brief-section">Tax</div>';
+    html += '<div class="brief-row"><span class="brief-label">Sales Tax Collected</span><span class="brief-val">'+fmt(d.salesTax)+'</span></div>';
+    html += '<div class="brief-row"><span class="brief-label">Tax Reserve (15%)</span><span class="brief-val">'+fmt(d.taxSavings)+'</span></div>';
+
+    if(d.notes){
+      html += '<div class="notes-box">📝 '+d.notes+'</div>';
+    }
+    html += '</div>';
+
+    html += '<div class="action-row">';
+    html += '<button class="approve-btn" id="approve-'+item.id+'" onclick="approve(\''+item.id+'\')">✓ APPROVE — ADD TO P&L</button>';
+    html += '<button class="reject-btn" id="reject-'+item.id+'" onclick="reject(\''+item.id+'\')">✗ REJECT</button>';
+    html += '</div>';
+    html += '</div>';
+  });
+
+  document.getElementById('submissions').innerHTML = html;
+}
+
+async function approve(id){
+  var aBtn = document.getElementById('approve-'+id);
+  var rBtn = document.getElementById('reject-'+id);
+  aBtn.disabled = true; rBtn.disabled = true;
+  aBtn.textContent = 'APPROVING...';
+
+  var res = await apiFetch({action:'approve', id:id});
+
+  if(res && res.success){
+    document.getElementById('card-'+id).style.opacity='0.4';
+    aBtn.textContent = '✓ APPROVED';
+    aBtn.style.background = '#aaa';
+    showToast('Approved — added to P&L sheet ✓', 'ok');
+  } else {
+    aBtn.disabled = false; rBtn.disabled = false;
+    aBtn.textContent = '✓ APPROVE — ADD TO P&L';
+    showToast(res?.message||'Error approving','err');
+  }
+}
+
+async function reject(id){
+  var note = prompt('Reason for rejection (optional):') || '';
+  var aBtn = document.getElementById('approve-'+id);
+  var rBtn = document.getElementById('reject-'+id);
+  aBtn.disabled = true; rBtn.disabled = true;
+  rBtn.textContent = 'REJECTING...';
+
+  var res = await apiFetch({action:'reject', id:id, note:note});
+
+  if(res && res.success){
+    document.getElementById('card-'+id).style.opacity='0.3';
+    rBtn.textContent = '✗ REJECTED';
+    showToast('Submission rejected','err');
+  } else {
+    aBtn.disabled = false; rBtn.disabled = false;
+    rBtn.textContent = '✗ REJECT';
+    showToast('Error rejecting','err');
+  }
+}
+
+function showToast(msg, type){
+  var t=document.getElementById('toast');
+  t.textContent=msg; t.className='toast '+(type==='err'?'err':'ok');
+  t.style.display='block';
+  setTimeout(function(){ t.style.display='none'; },2800);
+}
+</script>
+</body>
+</html>

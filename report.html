@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>SSC — End of Market Report</title>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink:#1a1714; --cream:#f2ede4; --blue:#2D4B8E; --red:#C0392B;
+  --gold:#C9A84C; --green:#2D6A4F; --border:#d4cbbf; --muted:#888;
+  --lgray:#f5f5f3;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{font-family:'Courier Prime',monospace;background:var(--cream);color:var(--ink);min-height:100vh;max-width:480px;margin:0 auto;}
+.oswald{font-family:'Oswald',sans-serif;}
+
+.header{background:var(--ink);color:white;padding:12px 16px 10px;position:sticky;top:0;z-index:100;}
+.header-title{font-family:'Oswald',sans-serif;color:var(--gold);font-size:14px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;}
+.header-sub{font-size:8px;letter-spacing:0.2em;opacity:0.4;text-transform:uppercase;margin-top:2px;}
+.back-link{color:rgba(255,255,255,0.4);font-size:9px;letter-spacing:0.1em;text-decoration:none;font-family:'Oswald',sans-serif;display:block;margin-bottom:6px;}
+
+.steps{display:grid;grid-template-columns:repeat(3,1fr);background:var(--blue);}
+.step{text-align:center;padding:6px;font-family:'Oswald',sans-serif;font-size:8px;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.4);}
+.step.active{background:var(--gold);color:var(--ink);font-weight:700;}
+
+.section{background:white;border:1px solid var(--border);margin:10px 12px;overflow:hidden;}
+.s-hdr{background:var(--ink);color:white;padding:6px 14px;font-family:'Oswald',sans-serif;font-size:10px;letter-spacing:0.15em;text-transform:uppercase;}
+.s-body{padding:12px 14px;}
+.label{font-size:8px;letter-spacing:0.12em;color:#999;text-transform:uppercase;margin-bottom:3px;display:block;font-family:'Oswald',sans-serif;}
+.input{width:100%;border:1px solid var(--border);padding:8px 10px;font-family:'Courier Prime',monospace;font-size:13px;background:#fafaf8;outline:none;}
+.select{width:100%;border:1px solid var(--border);padding:8px 10px;font-family:'Courier Prime',monospace;font-size:13px;background:#fafaf8;outline:none;-webkit-appearance:none;}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
+.field{margin-bottom:10px;}
+
+.toggle{display:flex;align-items:center;gap:10px;padding:10px;border:2px solid var(--border);cursor:pointer;margin-bottom:8px;}
+.toggle.on{border-color:var(--gold);background:#fdf8ec;}
+.toggle-dot{width:22px;height:22px;border-radius:50%;background:var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;color:white;font-size:11px;font-weight:700;}
+.toggle.on .toggle-dot{background:var(--gold);}
+.toggle-label{font-family:'Oswald',sans-serif;font-size:13px;letter-spacing:0.04em;}
+.toggle-sub{font-size:9px;color:#999;margin-top:1px;}
+
+.chip{display:inline-block;padding:5px 10px;border:1px solid var(--border);background:#f9f8f6;color:#666;font-size:10px;cursor:pointer;margin:3px;border-radius:2px;}
+.chip.on{border:2px solid var(--blue);background:#edf2f0;color:var(--blue);font-weight:700;}
+
+.btn{width:100%;padding:14px;border:none;font-family:'Oswald',sans-serif;font-size:14px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;cursor:pointer;margin-bottom:4px;}
+.btn-primary{background:var(--red);color:white;}
+.btn-secondary{background:#555;color:white;}
+.btn-gold{background:var(--gold);color:var(--ink);}
+.btn-green{background:var(--green);color:white;}
+.btn:disabled{background:#ccc;cursor:default;}
+.btn-row{display:flex;gap:8px;padding:0 12px 16px;}
+
+/* DAY BRIEF */
+.hero{background:var(--ink);color:white;padding:16px 18px;margin:10px 12px;text-align:center;}
+.hero-label{font-size:9px;color:rgba(255,255,255,0.4);letter-spacing:0.2em;text-transform:uppercase;margin-bottom:4px;}
+.hero-num{font-family:'Oswald',sans-serif;font-size:2rem;font-weight:700;}
+.hero-num.pos{color:#6fcf97;}
+.hero-num.neg{color:#eb5757;}
+.hero-sub{font-size:10px;color:rgba(255,255,255,0.35);margin-top:4px;}
+
+.calc-row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #f0ede8;font-size:12px;}
+.calc-label{color:#777;}
+.calc-val{font-weight:700;}
+.calc-total{display:flex;justify-content:space-between;padding:6px 0;margin-top:4px;border-top:2px solid var(--ink);font-size:13px;font-weight:700;}
+
+.staff-card{margin-bottom:8px;overflow:hidden;}
+.staff-card-hdr{padding:7px 12px;color:white;display:flex;justify-content:space-between;align-items:center;font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:0.06em;text-transform:uppercase;}
+.staff-card-body{padding:8px 12px;background:white;border:1px solid var(--border);border-top:none;}
+.staff-line{display:flex;justify-content:space-between;font-size:11px;padding:3px 0;border-bottom:1px solid #f5f5f5;}
+.staff-total{display:flex;justify-content:space-between;font-size:13px;font-weight:700;padding:5px 0;margin-top:2px;}
+
+.tax-row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #eee;font-size:11px;}
+
+/* SUBMIT SECTION */
+.submit-section{background:white;border:2px solid var(--gold);margin:10px 12px;overflow:hidden;}
+.submit-hdr{background:var(--gold);color:var(--ink);padding:8px 14px;font-family:'Oswald',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;}
+.submit-body{padding:14px;}
+.submit-note{font-size:10px;color:#888;margin-bottom:12px;line-height:1.5;}
+
+/* CONFIRMATION */
+.confirm-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;padding:40px 24px;text-align:center;}
+.confirm-icon{font-size:48px;margin-bottom:16px;}
+.confirm-title{font-family:'Oswald',sans-serif;font-size:22px;font-weight:700;letter-spacing:0.06em;color:var(--green);margin-bottom:8px;}
+.confirm-sub{font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:24px;}
+
+.toast{position:fixed;top:16px;left:50%;transform:translateX(-50%);padding:10px 20px;border-radius:4px;font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:0.08em;z-index:2000;color:white;box-shadow:0 4px 20px rgba(0,0,0,0.3);display:none;}
+.toast.ok{background:var(--green);}
+.toast.err{background:var(--red);}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <a href="index.html" class="back-link">← STAFF PORTAL</a>
+  <div class="header-title">End of Market Report</div>
+  <div class="header-sub">Submit for Jacob's Approval</div>
+</div>
+
+<div class="steps">
+  <div class="step active" id="step1-tab">1. Market</div>
+  <div class="step" id="step2-tab">2. Staff</div>
+  <div class="step" id="step3-tab">3. Review & Submit</div>
+</div>
+
+<!-- STEP 1: MARKET -->
+<div id="step1">
+  <div class="section">
+    <div class="s-hdr">▸ Who Are You?</div>
+    <div class="s-body">
+      <div class="field">
+        <label class="label">Your Name</label>
+        <select class="select" id="submittedBy">
+          <option value="">Select your name</option>
+          <option>Zach Blea</option>
+          <option>Alex Arroyo</option>
+          <option>Audrey Benson</option>
+          <option>Alexandra Dillon</option>
+          <option>Bryton Hall</option>
+          <option>Anna Baker</option>
+          <option>Dylan Boyce</option>
+          <option>Baccari Lyle</option>
+          <option>Tyree Brownlow</option>
+          <option>Jayden Johnson</option>
+          <option>Casual Labor</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="s-hdr">▸ Event Details</div>
+    <div class="s-body">
+      <div class="row2">
+        <div class="field">
+          <label class="label">Date</label>
+          <input class="input" type="text" id="date" placeholder="MM/DD/YYYY">
+        </div>
+        <div class="field">
+          <label class="label">City</label>
+          <select class="select" id="city">
+            <option>Bainbridge Island</option>
+            <option>Port Townsend</option>
+            <option>Sequim</option>
+            <option>Other</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label class="label">Event</label>
+        <select class="select" id="event" onchange="applyDefaults()">
+          <option>BiFM Farmers Market</option>
+          <option>Port Townsend Wednesday Market</option>
+          <option>Concerts in the Park</option>
+          <option>Concerts on the Dock (PT)</option>
+          <option>Bloedel Reserve Pop-Up</option>
+          <option>July 3rd Street Dance</option>
+          <option>Sequim Independence Day</option>
+          <option>Rotary Auction</option>
+          <option>BI Football Game</option>
+          <option>Bloedel Summer Solstice</option>
+          <option>Haunted Hayride</option>
+          <option>Winney Farms</option>
+          <option>Other</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="s-hdr">▸ Sales</div>
+    <div class="s-body">
+      <div class="row2">
+        <div class="field">
+          <label class="label">Card / Square ($)</label>
+          <input class="input" type="number" id="card" placeholder="0.00" step="0.01" oninput="liveCalc()">
+        </div>
+        <div class="field">
+          <label class="label">Cash ($)</label>
+          <input class="input" type="number" id="cash" placeholder="0.00" step="0.01" oninput="liveCalc()">
+        </div>
+      </div>
+      <div class="field">
+        <label class="label">Tips ($)</label>
+        <input class="input" type="number" id="tips" placeholder="0.00" step="0.01" oninput="liveCalc()">
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="s-hdr">▸ Market Fees</div>
+    <div class="s-body">
+      <div class="row2">
+        <div class="field">
+          <label class="label">Flat Fee ($)</label>
+          <input class="input" type="number" id="flatFee" value="40" oninput="liveCalc()">
+        </div>
+        <div class="field">
+          <label class="label">Market % Cut</label>
+          <input class="input" type="number" id="mktPctDisplay" value="2" step="0.5" oninput="liveCalc()">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-primary" style="flex:1" onclick="goStep(2)">NEXT — STAFF →</button>
+  </div>
+</div>
+
+<!-- STEP 2: STAFF -->
+<div id="step2" style="display:none;">
+  <div class="section">
+    <div class="s-hdr">▸ Was Zach Working?</div>
+    <div class="s-body">
+      <div class="toggle on" id="zachToggle" onclick="toggleZach()">
+        <div class="toggle-dot" id="zachDot">✓</div>
+        <div>
+          <div class="toggle-label">Zach Blea — Partner</div>
+          <div class="toggle-sub">12.5% wage + 2.5% escrow + tip share</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="s-hdr">▸ Other Staff Working</div>
+    <div class="s-body">
+      <div id="staff-chips">
+        <div class="chip" onclick="toggleStaff(this,'Alex Arroyo')">Alex</div>
+        <div class="chip" onclick="toggleStaff(this,'Audrey Benson')">Audrey</div>
+        <div class="chip" onclick="toggleStaff(this,'Alexandra Dillon')">Alexandra</div>
+        <div class="chip" onclick="toggleStaff(this,'Bryton Hall')">Bryton</div>
+        <div class="chip" onclick="toggleStaff(this,'Anna Baker')">Anna</div>
+        <div class="chip" onclick="toggleStaff(this,'Dylan Boyce')">Dylan</div>
+        <div class="chip" onclick="toggleStaff(this,'Baccari Lyle')">Baccari</div>
+        <div class="chip" onclick="toggleStaff(this,'Tyree Brownlow')">Tyree</div>
+        <div class="chip" onclick="toggleStaff(this,'Jayden Johnson')">Jayden</div>
+        <div class="chip" onclick="toggleStaff(this,'Casual Labor')">Casual</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="s-hdr">▸ Tip Pool</div>
+    <div class="s-body">
+      <div class="field">
+        <label class="label"># of Tipped Staff (including yourself)</label>
+        <input class="input" type="number" id="tipStaff" value="2" min="1" max="8" oninput="liveCalc()">
+      </div>
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-secondary" style="flex:1" onclick="goStep(1)">← BACK</button>
+    <button class="btn btn-primary" style="flex:2" onclick="goStep(3)">REVIEW →</button>
+  </div>
+</div>
+
+<!-- STEP 3: DAY BRIEF + SUBMIT -->
+<div id="step3" style="display:none;"></div>
+
+<!-- CONFIRMATION -->
+<div id="confirmed" style="display:none;">
+  <div class="confirm-screen">
+    <div class="confirm-icon">✅</div>
+    <div class="confirm-title">Report Submitted</div>
+    <div class="confirm-sub">Jacob has been notified and will review your submission.<br>Numbers won't hit the books until he approves.</div>
+    <a href="index.html"><button class="btn btn-gold" style="max-width:280px;">BACK TO PORTAL</button></a>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwb0JJ2FMqj3YgePFe3YiKs9AquaecfBqh-YAut3adssVXP_VxVinGWP3FlsUl_6OpOJQ/exec";
+
+var zachWorking = true;
+var otherStaff = [];
+var calc = {};
+
+const CITY_TAX = {
+  "Bainbridge Island": 0.096,
+  "Port Townsend": 0.089,
+  "Sequim": 0.089,
+  "Other": 0.096
+};
+
+function fmt(n){ return isNaN(n)?'$0.00':'$'+Number(n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+
+function applyDefaults(){
+  var ev = document.getElementById('event').value;
+  var defaults = {
+    'BiFM Farmers Market':            {flat:40, pct:2},
+    'Port Townsend Wednesday Market': {flat:0,  pct:0},
+    'July 3rd Street Dance':          {flat:500,pct:0},
+    'Rotary Auction':                 {flat:0,  pct:0},
+    'Concerts in the Park':           {flat:50, pct:0},
+  };
+  var d = defaults[ev] || {flat:0, pct:0};
+  document.getElementById('flatFee').value = d.flat;
+  document.getElementById('mktPctDisplay').value = d.pct;
+  liveCalc();
+}
+
+function toggleZach(){
+  zachWorking = !zachWorking;
+  var t = document.getElementById('zachToggle');
+  var d = document.getElementById('zachDot');
+  t.className = 'toggle' + (zachWorking?' on':'');
+  d.textContent = zachWorking ? '✓' : '';
+  updateTipCount();
+  liveCalc();
+}
+
+function toggleStaff(el, name){
+  var idx = otherStaff.indexOf(name);
+  if(idx >= 0){ otherStaff.splice(idx,1); el.className='chip'; }
+  else { otherStaff.push(name); el.className='chip on'; }
+  updateTipCount();
+  liveCalc();
+}
+
+function updateTipCount(){
+  var count = 1 + (zachWorking?1:0) + otherStaff.length;
+  document.getElementById('tipStaff').value = count;
+}
+
+function liveCalc(){
+  var card    = parseFloat(document.getElementById('card')?.value)||0;
+  var cash    = parseFloat(document.getElementById('cash')?.value)||0;
+  var tips    = parseFloat(document.getElementById('tips')?.value)||0;
+  var tipStaff= parseInt(document.getElementById('tipStaff')?.value)||1;
+  var flat    = parseFloat(document.getElementById('flatFee')?.value)||0;
+  var pct     = (parseFloat(document.getElementById('mktPctDisplay')?.value)||0)/100;
+  var city    = document.getElementById('city')?.value||'Bainbridge Island';
+  var taxRate = CITY_TAX[city]||0.096;
+
+  var gross       = card + cash;
+  var salesTax    = gross * taxRate / (1 + taxRate);
+  var ccFees      = card * 0.026;
+  var foodCost    = gross * 0.25;
+  var fuel        = gross * 0.015;
+  var mktFee      = flat + (gross * pct);
+  var preLaborExp = ccFees + foodCost + fuel + mktFee;
+  var preLaborPL  = gross - preLaborExp;
+  var zachWage    = zachWorking ? Math.max(preLaborPL * 0.125, 100) : 0;
+  var zachEscrow  = zachWorking ? preLaborPL * 0.025 : 0;
+  var staffWageEa = otherStaff.length > 0 ? Math.max(preLaborPL * 0.10, 100) : 0;
+  var totalLabor  = zachWage + (staffWageEa * otherStaff.length);
+  var netPL       = preLaborPL - totalLabor;
+  var tipEa       = tipStaff > 0 ? tips / tipStaff : 0;
+  var taxSavings  = Math.max(netPL * 0.15, 0);
+
+  calc = { gross, salesTax, ccFees, foodCost, fuel, mktFee, preLaborExp, preLaborPL,
+    zachWage, zachEscrow, staffWageEa, totalLabor, netPL, tipEa, taxSavings,
+    card, cash, tips, tipStaff, pct };
+}
+
+function goStep(n){
+  if(n===2){
+    var by = document.getElementById('submittedBy').value;
+    var card = parseFloat(document.getElementById('card').value)||0;
+    if(!by){ showToast('Select your name first','err'); return; }
+    if(card <= 0){ showToast('Enter card sales amount','err'); return; }
+    // Set today's date if empty
+    if(!document.getElementById('date').value){
+      var d=new Date(); document.getElementById('date').value=(d.getMonth()+1)+'/'+d.getDate()+'/'+d.getFullYear();
+    }
+  }
+  if(n===3){
+    liveCalc();
+    renderBrief();
+  }
+  ['step1','step2','step3'].forEach(function(id){ document.getElementById(id).style.display='none'; });
+  ['step1-tab','step2-tab','step3-tab'].forEach(function(id,i){ document.getElementById(id).className='step'+(i===n-1?' active':''); });
+  document.getElementById('step'+n).style.display='block';
+  window.scrollTo(0,0);
+}
+
+function renderBrief(){
+  liveCalc();
+  var event = document.getElementById('event').value;
+  var date  = document.getElementById('date').value;
+  var city  = document.getElementById('city').value;
+  var by    = document.getElementById('submittedBy').value;
+
+  var html = '';
+
+  // Hero P/L
+  html += '<div class="hero">';
+  html += '<div class="hero-label">NET P/L — '+date+'</div>';
+  html += '<div class="hero-num '+(calc.netPL>=0?'pos':'neg')+'">'+fmt(calc.netPL)+'</div>';
+  html += '<div class="hero-sub">'+event+' · '+city+'</div>';
+  html += '</div>';
+
+  // Revenue breakdown
+  html += '<div class="section"><div class="s-hdr">▸ Revenue & Expenses</div><div class="s-body">';
+  [['Gross Sales',calc.gross,false],['Sales Tax → Remit DOR',calc.salesTax,true],
+   ['CC Fees (2.6%)',calc.ccFees,true],['Food Cost (25%)',calc.foodCost,true],
+   ['Market Fee',calc.mktFee,true],['Fuel (1.5%)',calc.fuel,true]].forEach(function(r){
+    html += '<div class="calc-row"><span class="calc-label">'+r[0]+'</span><span class="calc-val" style="color:'+(r[2]?'#C0392B':'#1a1714')+'">'+fmt(r[1])+'</span></div>';
+  });
+  html += '<div class="calc-total"><span>PRE-LABOR P/L</span><span style="color:'+(calc.preLaborPL>=0?'#2D6A4F':'#C0392B')+'">'+fmt(calc.preLaborPL)+'</span></div>';
+  html += '</div></div>';
+
+  // Staff cards
+  html += '<div style="margin:0 12px;">';
+  html += '<div style="font-family:Oswald,sans-serif;font-size:9px;letter-spacing:0.12em;color:#888;text-transform:uppercase;margin-bottom:6px;">▸ Staff Pay</div>';
+
+  if(zachWorking){
+    html += '<div class="staff-card"><div class="staff-card-hdr" style="background:#C9A84C;">'+
+      '<span>Zach Blea — Partner</span><span>'+fmt(calc.zachWage+calc.tipEa)+' cash</span></div>'+
+      '<div class="staff-card-body">'+
+      '<div class="staff-line"><span>Wage (12.5%)</span><span>'+fmt(calc.zachWage)+'</span></div>'+
+      '<div class="staff-line"><span>Tips ('+calc.tipStaff+'-way)</span><span>'+fmt(calc.tipEa)+'</span></div>'+
+      '<div class="staff-line" style="color:#888;"><span>Escrow (2.5%) — held</span><span>'+fmt(calc.zachEscrow)+'</span></div>'+
+      '<div class="staff-total"><span>CASH TODAY</span><span style="color:#C9A84C;">'+fmt(calc.zachWage+calc.tipEa)+'</span></div>'+
+      '</div></div>';
+  }
+
+  otherStaff.forEach(function(name){
+    html += '<div class="staff-card"><div class="staff-card-hdr" style="background:#2D4B8E;">'+
+      '<span>'+name+'</span><span>'+fmt(calc.staffWageEa+calc.tipEa)+' cash</span></div>'+
+      '<div class="staff-card-body">'+
+      '<div class="staff-line"><span>Wage (10%)</span><span>'+fmt(calc.staffWageEa)+'</span></div>'+
+      '<div class="staff-line"><span>Tips ('+calc.tipStaff+'-way)</span><span>'+fmt(calc.tipEa)+'</span></div>'+
+      '<div class="staff-total"><span>CASH TODAY</span><span style="color:#2D4B8E;">'+fmt(calc.staffWageEa+calc.tipEa)+'</span></div>'+
+      '</div></div>';
+  });
+
+  html += '<div class="staff-card"><div class="staff-card-hdr" style="background:#2D6A4F;">'+
+    '<span>Jacob — Owner</span><span>Tips + P/L</span></div>'+
+    '<div class="staff-card-body">'+
+    '<div class="staff-line"><span>Tips ('+calc.tipStaff+'-way)</span><span>'+fmt(calc.tipEa)+'</span></div>'+
+    '<div class="staff-line"><span>Net P/L</span><span>'+fmt(calc.netPL)+'</span></div>'+
+    '<div class="staff-line" style="color:#C0392B;"><span>Tax Reserve (15%)</span><span>'+fmt(calc.taxSavings)+'</span></div>'+
+    '<div class="staff-total"><span>TO SAVINGS</span><span style="color:#2D6A4F;">'+fmt(Math.max(calc.netPL-calc.taxSavings,0))+'</span></div>'+
+    '</div></div>';
+
+  html += '</div>';
+
+  // Tax numbers
+  html += '<div class="section"><div class="s-hdr">▸ Tax Numbers</div><div class="s-body">';
+  [['Gross Revenue',calc.gross],['Sales Tax Collected',calc.salesTax],['Income Tax Reserve (15%)',calc.taxSavings]].forEach(function(r){
+    html += '<div class="tax-row"><span style="color:#777;">'+r[0]+'</span><span style="font-weight:700;">'+fmt(r[1])+'</span></div>';
+  });
+  html += '</div></div>';
+
+  // Notes
+  html += '<div class="section"><div class="s-hdr">▸ Notes (Optional)</div><div class="s-body">';
+  html += '<textarea class="input" id="notes" style="height:70px;resize:none;" placeholder="Anything Jacob should know about this market..."></textarea>';
+  html += '</div></div>';
+
+  // SUBMIT SECTION
+  html += '<div class="submit-section"><div class="submit-hdr">⚡ Submit for Jacob\'s Approval</div>';
+  html += '<div class="submit-body">';
+  html += '<div class="submit-note">This report will go to Jacob for review.<br>Numbers are NOT added to the books until he approves.</div>';
+  html += '<button class="btn btn-green" id="submit-btn" onclick="submitReport()">SUBMIT REPORT FOR APPROVAL</button>';
+  html += '<div style="font-size:9px;color:#bbb;text-align:center;margin-top:6px;font-style:italic;">Submitted by '+by+'</div>';
+  html += '</div></div>';
+
+  html += '<div style="height:20px;"></div>';
+
+  document.getElementById('step3').innerHTML = html;
+}
+
+function apiFetch(params){
+  return new Promise(function(resolve){
+    var cbName='ssc_cb_'+Date.now();
+    var url=WEB_APP_URL+'?'+new URLSearchParams(Object.assign({},params,{callback:cbName})).toString();
+    window[cbName]=function(data){ delete window[cbName]; var el=document.getElementById(cbName); if(el)el.remove(); resolve(data); };
+    var script=document.createElement('script');
+    script.id=cbName; script.src=url;
+    script.onerror=function(){ delete window[cbName]; script.remove(); resolve({success:false,message:'Connection error'}); };
+    document.body.appendChild(script);
+    setTimeout(function(){ if(window[cbName]){ delete window[cbName]; var el=document.getElementById(cbName); if(el)el.remove(); resolve({success:false,message:'Timeout'}); } },10000);
+  });
+}
+
+async function submitReport(){
+  var btn = document.getElementById('submit-btn');
+  btn.disabled = true;
+  btn.textContent = 'SUBMITTING...';
+
+  liveCalc();
+
+  var notes = document.getElementById('notes')?.value || '';
+
+  var params = {
+    action:       'submit',
+    submittedBy:  document.getElementById('submittedBy').value,
+    date:         document.getElementById('date').value,
+    event:        document.getElementById('event').value,
+    city:         document.getElementById('city').value,
+    payment:      'Square',
+    card:         document.getElementById('card').value||0,
+    cash:         document.getElementById('cash').value||0,
+    tips:         document.getElementById('tips').value||0,
+    tipStaff:     document.getElementById('tipStaff').value||2,
+    flatFee:      document.getElementById('flatFee').value||40,
+    mktPct:       (parseFloat(document.getElementById('mktPctDisplay').value)||0)/100,
+    zachWorking:  zachWorking,
+    otherStaff:   otherStaff.join(','),
+    otherCount:   otherStaff.length,
+    notes:        notes,
+    gross:        calc.gross,
+    salesTax:     calc.salesTax,
+    ccFees:       calc.ccFees,
+    foodCost:     calc.foodCost,
+    fuel:         calc.fuel,
+    mktFee:       calc.mktFee,
+    preLaborPL:   calc.preLaborPL,
+    zachWage:     calc.zachWage,
+    zachEscrow:   calc.zachEscrow,
+    staffWageEa:  calc.staffWageEa,
+    totalLabor:   calc.totalLabor,
+    netPL:        calc.netPL,
+    tipEa:        calc.tipEa,
+    taxSavings:   calc.taxSavings,
+  };
+
+  var res = await apiFetch(params);
+
+  if(res && res.success){
+    document.getElementById('step3').style.display='none';
+    document.getElementById('confirmed').style.display='block';
+    window.scrollTo(0,0);
+  } else {
+    btn.disabled = false;
+    btn.textContent = 'SUBMIT REPORT FOR APPROVAL';
+    showToast(res?.message||'Submission failed — try again','err');
+  }
+}
+
+function showToast(msg, type){
+  var t=document.getElementById('toast');
+  t.textContent=msg; t.className='toast '+(type==='err'?'err':'ok');
+  t.style.display='block';
+  setTimeout(function(){ t.style.display='none'; },2800);
+}
+
+// Set today's date on load
+window.onload = function(){
+  var d=new Date();
+  document.getElementById('date').value=(d.getMonth()+1)+'/'+d.getDate()+'/'+d.getFullYear();
+  liveCalc();
+};
+</script>
+</body>
+</html>
