@@ -134,7 +134,7 @@ body{font-family:'Courier Prime',monospace;background:var(--cream);color:var(--i
       <div class="row2">
         <div class="field">
           <label class="label">Date</label>
-          <input class="input" type="text" id="date" placeholder="MM/DD/YYYY">
+          <input class="input" type="text" id="date" placeholder="MM/DD/YYYY" onchange="pullSquareData()">
         </div>
         <div class="field">
           <label class="label">City</label>
@@ -274,6 +274,7 @@ body{font-family:'Courier Prime',monospace;background:var(--cream);color:var(--i
 
 <script>
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwb0JJ2FMqj3YgePFe3YiKs9AquaecfBqh-YAut3adssVXP_VxVinGWP3FlsUl_6OpOJQ/exec";
+const PL_APP_URL  = "https://script.google.com/macros/s/AKfycbwqiieZxIPvjeQD6r-bQHUCjAvOMm4Ex4p7mYyJKG_DE--6mkhMVhaPGF8Fdmh2OL8O9Q/exec";
 
 var zachWorking = true;
 var otherStaff = [];
@@ -326,6 +327,37 @@ function updateTipCount(){
   document.getElementById('tipStaff').value = count;
 }
 
+async function pullSquareData() {
+  var date = document.getElementById('date').value;
+  if (!date || date.length < 8) return;
+  
+  var cardField = document.getElementById('card');
+  var tipsField = document.getElementById('tips');
+  
+  // Show loading state
+  cardField.placeholder = 'Pulling from Square...';
+  tipsField.placeholder = 'Pulling from Square...';
+  
+  var data = await squareFetch(date);
+  
+  if (data && (data.card > 0 || data.tips > 0)) {
+    cardField.value = data.card.toFixed(2);
+    tipsField.value = data.tips.toFixed(2);
+    cardField.style.background = '#f0faf4';
+    tipsField.style.background = '#f0faf4';
+    showToast('Square data loaded — ' + data.count + ' transactions', 'ok');
+    liveCalc();
+  } else {
+    cardField.placeholder = '0.00';
+    tipsField.placeholder = '0.00';
+    if (data === null) {
+      showToast('Could not reach Square — enter manually', 'err');
+    } else {
+      showToast('No Square transactions found for this date', 'err');
+    }
+  }
+}
+
 function liveCalc(){
   var card    = parseFloat(document.getElementById('card')?.value)||0;
   var cash    = parseFloat(document.getElementById('cash')?.value)||0;
@@ -360,12 +392,11 @@ function liveCalc(){
 function goStep(n){
   if(n===2){
     var by = document.getElementById('submittedBy').value;
-    var card = parseFloat(document.getElementById('card').value)||0;
     if(!by){ showToast('Select your name first','err'); return; }
-    if(card <= 0){ showToast('Enter card sales amount','err'); return; }
-    // Set today's date if empty
+    // Set today's date if empty and trigger Square pull
     if(!document.getElementById('date').value){
       var d=new Date(); document.getElementById('date').value=(d.getMonth()+1)+'/'+d.getDate()+'/'+d.getFullYear();
+      pullSquareData();
     }
   }
   if(n===3){
